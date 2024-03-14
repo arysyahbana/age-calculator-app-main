@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- displays site properly based on user's device -->
+
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="assets/images/favicon-32x32.png"
+    />
+    <link href="./output.css" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
+      rel="stylesheet"
+    />
+
+    <title>Frontend Mentor | Age calculator app</title>
+    <script src="https://cdn.skypack.dev/luxon"></script>
+
+    <!-- Feel free to remove these styles or customise in your own stylesheet 👍 -->
+    <style>
+      .attribution {
+        font-size: 11px;
+        text-align: center;
+      }
+      .attribution a {
+        color: hsl(228, 45%, 44%);
+      }
+
+      body {
+        font-family: "Poppins", sans-serif;
+        font-weight: 400;
+        font-style: normal;
+      }
+
+      .poppins-bold {
+        font-family: "Poppins", sans-serif;
+        font-weight: 700;
+        font-style: normal;
+      }
+
+      input:focus {
+        outline-width: 1;
+        outline-color: #854dff;
+      }
+    </style>
+  </head>
+  <body class="bg-[#dbdbdb]">
+    <div
+      class="container-fluid h-screen flex flex-col justify-center items-center w-screen"
+    >
+      <div id="app">
+        <div
+          class="bg-white p-10 rounded-s-3xl rounded-tr-3xl rounded-br-[10rem] w-[25rem] sm:w-[30rem] md:w-[48rem]"
+        >
+          <div class="flex gap-4 flex-row">
+            <div class="mb-5 max-w-36">
+              <label
+                for="day"
+                :class="{'text-[#ff5757]' : emptyDay || !validDay || day>31}"
+                class="block mb-2 text-sm font-bold text-gray-900 tracking-[0.2rem]"
+                >DAY</label
+              >
+              <input
+                type="text"
+                id="day"
+                :class="{'border-[#ff5757]' : emptyDay || !validDay || day>31}"
+                class="bg-gray-50 border border-gray-300 text-gray-900 text-xl md:text-2xl rounded-lg block w-full py-3 px-5 poppins-bold"
+                placeholder="DD"
+                required
+                v-model="day"
+              />
+              <label
+                for="day"
+                class="text-xs italic text-[#ff5757]"
+                v-if="emptyDay"
+                >This field is required</label
+              >
+              <label
+                for="day"
+                class="text-xs italic text-[#ff5757]"
+                v-if="!validDay || day>31"
+                >Must be a valid day</label
+              >
+            </div>
+            <div class="mb-5 max-w-36">
+              <label
+                for="month"
+                :class="{'text-[#ff5757]' : emptyMonth || !validMonth || month>12}"
+                class="block mb-2 text-sm font-bold text-gray-900 tracking-[0.2rem]"
+                >MONTH</label
+              >
+              <input
+                type="text"
+                id="month"
+                :class="{'border-[#ff5757]' : emptyMonth || !validMonth || month>12}"
+                class="bg-gray-50 border border-gray-300 text-gray-900 text-xl md:text-2xl rounded-lg block w-full py-3 px-5 poppins-bold"
+                placeholder="MM"
+                required
+                v-model="month"
+              />
+              <label
+                for="month"
+                class="text-xs italic text-[#ff5757]"
+                v-if="emptyMonth"
+                >This field is required</label
+              >
+              <label
+                for="month"
+                class="text-xs italic text-[#ff5757]"
+                v-if="!validMonth || month>12"
+                >Must be a valid month</label
+              >
+            </div>
+            <div class="mb-5 max-w-36">
+              <label
+                for="year"
+                :class="{'text-[#ff5757]' : emptyYear || year>currentYear}"
+                class="block mb-2 text-sm font-bold text-gray-900 tracking-[0.2rem]"
+                >YEAR</label
+              >
+              <input
+                type="text"
+                id="year"
+                :class="{'border-[#ff5757]' : emptyYear || year>currentYear}"
+                class="bg-gray-50 border border-gray-300 text-gray-900 text-xl md:text-2xl rounded-lg block w-full py-3 px-5 poppins-bold"
+                placeholder="YYYY"
+                required
+                v-model="year"
+              />
+              <label
+                for="year"
+                class="text-xs italic text-[#ff5757]"
+                v-if="emptyYear"
+                >This field is required</label
+              >
+              <label
+                for="year"
+                class="text-xs italic text-[#ff5757]"
+                v-if="year>currentYear"
+                >Must be in the past</label
+              >
+            </div>
+          </div>
+
+          <div class="flex items-center my-7 md:my-0">
+            <hr class="w-full" />
+            <div class="">
+              <button
+                class="bg-[#854dff] p-3 md:p-5 rounded-full hover:bg-black"
+                @click="btnSubmit"
+              >
+                <img
+                  src="assets/images/icon-arrow.svg"
+                  alt=""
+                  class="w-24 md:w-8"
+                />
+              </button>
+            </div>
+            <hr class="block md:hidden w-full" />
+          </div>
+
+          <!-- hasil -->
+          <div class="flex flex-col">
+            <div class="text-6xl md:text-8xl italic font-bold">
+              <span
+                class="tracking-[0.2rem] text-[#854dff] mr-5"
+                v-if="showYear"
+                >{{ years }}
+              </span>
+              <span class="tracking-[0.2rem] text-[#854dff]" v-else>--</span>
+              <span>years</span>
+            </div>
+            <div class="text-6xl md:text-8xl italic font-bold">
+              <span
+                class="tracking-[0.2rem] text-[#854dff] mr-5"
+                v-if="showMonth"
+                >{{ months }}</span
+              >
+              <span class="tracking-[0.2rem] text-[#854dff]" v-else>--</span>
+              <span>months</span>
+            </div>
+            <div class="text-6xl md:text-8xl italic font-bold">
+              <span class="tracking-[0.2rem] text-[#854dff] mr-5" v-if="showDay"
+                >{{ days }}</span
+              >
+              <span class="tracking-[0.2rem] text-[#854dff]" v-else>--</span>
+              <span>days</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="attribution mt-5">
+        Challenge by
+        <a href="https://www.frontendmentor.io?ref=challenge" target="_blank"
+          >Frontend Mentor</a
+        >. Coded by
+        <a href="https://www.frontendmentor.io/profile/arysyahbana"
+          >Ary Syahbana</a
+        >.
+      </div>
+    </div>
+
+    <script type="module">
+      import { createApp } from "https://unpkg.com/vue@3/dist/vue.esm-browser.js";
+
+      createApp({
+        data() {
+          return {
+            day: "",
+            month: "",
+            year: "",
+            showDay: null,
+            showMonth: null,
+            showYear: null,
+            years: null,
+            months: null,
+            days: null,
+            emptyDay: false,
+            emptyMonth: false,
+            emptyYear: false,
+            validDay: true,
+            validMonth: true,
+          };
+        },
+
+        mounted() {
+          this.currentYear = new Date().getFullYear();
+        },
+
+        methods: {
+          btnSubmit() {
+            // if (this.day === "" && this.month === "" && this.year === "") {
+            //   this.emptyDay = true;
+            //   this.emptyMonth = true;
+            //   this.emptyYear = true;
+            // } else if (this.day === "" && this.month === "") {
+            //   this.emptyDay = true;
+            //   this.emptyMonth = true;
+            // } else if (this.day === "" && this.year === "") {
+            //   this.emptyDay = true;
+            //   this.emptyYear = true;
+            // } else if (this.day === "") {
+            //   this.emptyDay = true;
+            // } else if (this.month === "" && this.day === "") {
+            //   this.emptyMonth = true;
+            //   this.emptyDay = true;
+            // } else if (this.month === "" && this.year === "") {
+            //   this.emptyMonth = true;
+            //   this.emptyYear = true;
+            // } else if (this.month === "") {
+            //   this.emptyMonth = true;
+            // } else if (this.year === "" && this.day === "") {
+            //   this.emptyYear = true;
+            //   this.emptyDay = true;
+            // } else if (this.year === "" && this.month === "") {
+            //   this.emptyYear = true;
+            //   this.emptyMonth = true;
+            // } else if (this.year === "") {
+            //   this.emptyYear = true;
+            // } else {
+            //   this.emptyDay = false;
+            //   this.emptyMonth = false;
+            //   this.emptyYear = false;
+            // }
+
+            if (this.day === "" || this.month === "" || this.year === "") {
+              this.emptyDay = this.day === "";
+              this.emptyMonth = this.month === "";
+              this.emptyYear = this.year === "";
+              return;
+            }
+
+            // mengecek bulan dan tanggal
+            const dayInt = parseInt(this.day);
+            const monthInt = parseInt(this.month);
+            const yearInt = parseInt(this.year);
+            if (
+              dayInt <= 0 ||
+              dayInt > this.getMaxDaysInMonth(monthInt, yearInt)
+            ) {
+              this.validDay = false;
+              return;
+            }
+
+            if (monthInt <= 0 || monthInt > 12) {
+              this.validMonth = false;
+              return;
+            }
+
+            // end mengecek
+
+            const birthDate = new Date(
+              parseInt(this.year),
+              parseInt(this.month) - 1,
+              parseInt(this.day)
+            );
+
+            const currentDate = new Date();
+
+            const diffTime = Math.abs(
+              currentDate.getTime() - birthDate.getTime()
+            );
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            const diffYears = Math.floor(diffDays / 365);
+            const diffMonths = Math.floor((diffDays % 365) / 30);
+
+            this.showYear = true;
+            this.showMonth = true;
+            this.showDay = true;
+            this.years = diffYears;
+            this.months = diffMonths;
+            this.days = diffDays - (diffYears * 365 + diffMonths * 30);
+          },
+
+          getMaxDaysInMonth(month, year) {
+            const daysInMonth = {
+              1: 31, // Januari
+              2: this.isLeapYear(year) ? 29 : 28, // Februari (periksa apakah tahun kabisat)
+              3: 31, // Maret
+              4: 30, // April
+              5: 31, // Mei
+              6: 30, // Juni
+              7: 31, // Juli
+              8: 31, // Agustus
+              9: 30, // September
+              10: 31, // Oktober
+              11: 30, // November
+              12: 31, // Desember
+            };
+
+            return daysInMonth[month];
+          },
+
+          isLeapYear(year) {
+            return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
+          },
+        },
+      }).mount("#app");
+    </script>
+  </body>
+</html>
